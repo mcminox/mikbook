@@ -13,8 +13,6 @@ npm run dev
 
 - Просмотр: [http://127.0.0.1:3000](http://127.0.0.1:3000)
 - Редактор картинок: [http://127.0.0.1:3000/?edit=1](http://127.0.0.1:3000/?edit=1)
-- Исходная версия: [http://127.0.0.1:3000/original](http://127.0.0.1:3000/original)
-- Разделы исходной версии: `/original/games`, `/original/serious-games`, `/original/videos`, `/original/collection`
 - Кнопка **S'abonner** справа внизу → Checkout (mensuel / annuel)
 
 ## Stripe

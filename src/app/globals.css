@@ -154,16 +154,6 @@ body {
   }
 }
 
-.landing-original .landing-columns {
-  display: none;
-}
-
-@media (min-width: 900px) {
-  .landing-original .landing-columns {
-    display: grid;
-  }
-}
-
 @media (min-width: 900px) {
   .landing-desktop {
     display: grid;
@@ -455,18 +445,6 @@ html::-webkit-scrollbar {
   letter-spacing: 0.02em;
   margin: 0 0 1rem;
   text-transform: uppercase;
-}
-
-[contenteditable="true"] {
-  cursor: text;
-  outline: 1px dashed transparent;
-  outline-offset: 3px;
-}
-
-[contenteditable="true"]:hover,
-[contenteditable="true"]:focus {
-  outline-color: rgba(17, 17, 17, 0.28);
-  background: rgba(255, 255, 255, 0.25);
 }
 
 .landing-col1-inner p {

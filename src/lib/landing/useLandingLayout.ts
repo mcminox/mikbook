@@ -1,8 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { ColumnId, ImageItem, LandingLayout, LandingText } from "./layout-types";
-import { DEFAULT_LANDING_TEXT, STORAGE_KEY } from "./layout-types";
+import type { ColumnId, ImageItem, LandingLayout } from "./layout-types";
+import { STORAGE_KEY } from "./layout-types";
 import {
   clampImageInColumn,
   ensureColumnOrders,
@@ -21,14 +21,10 @@ function isLandingLayout(value: unknown): value is LandingLayout {
   );
 }
 
-function hydrate(
-  raw: LandingLayout,
-  textDefaults: LandingText = DEFAULT_LANDING_TEXT,
-): LandingLayout {
+function hydrate(raw: LandingLayout): LandingLayout {
   return {
     ...raw,
     images: ensureColumnOrders(raw.images),
-    text: { ...textDefaults, ...raw.text },
   };
 }
 
@@ -48,10 +44,7 @@ function aspectsFrom(images: ImageItem[]): Record<string, number> {
   return map;
 }
 
-export function useLandingLayout(
-  storageKey = STORAGE_KEY,
-  textDefaults: LandingText = DEFAULT_LANDING_TEXT,
-) {
+export function useLandingLayout(storageKey = STORAGE_KEY) {
   const [layout, setLayout] = useState<LandingLayout | null>(null);
   const [ready, setReady] = useState(false);
   const [dirty, setDirty] = useState(false);
@@ -66,7 +59,7 @@ export function useLandingLayout(
           const parsed: unknown = JSON.parse(raw);
           if (isLandingLayout(parsed)) {
             if (!cancelled) {
-              setLayout(hydrate(parsed, textDefaults));
+              setLayout(hydrate(parsed));
               setReady(true);
             }
             return;
@@ -74,13 +67,13 @@ export function useLandingLayout(
         }
         const seed = await fetchSeed();
         if (!cancelled) {
-          setLayout(hydrate(seed, textDefaults));
+          setLayout(seed);
           setReady(true);
         }
       } catch {
         const seed = await fetchSeed();
         if (!cancelled) {
-          setLayout(hydrate(seed, textDefaults));
+          setLayout(seed);
           setReady(true);
         }
       }
@@ -88,7 +81,7 @@ export function useLandingLayout(
     return () => {
       cancelled = true;
     };
-  }, [storageKey, textDefaults]);
+  }, [storageKey]);
 
   const updateLayout = useCallback((updater: (prev: LandingLayout) => LandingLayout) => {
     setLayout((prev) => {
@@ -125,16 +118,6 @@ export function useLandingLayout(
       };
     });
   }, []);
-
-  const updateText = useCallback(
-    (patch: Partial<LandingText>) => {
-      updateLayout((prev) => ({
-        ...prev,
-        text: { ...(prev.text ?? DEFAULT_LANDING_TEXT), ...patch },
-      }));
-    },
-    [updateLayout],
-  );
 
   const updateImage = useCallback(
     (id: string, patch: Partial<ImageItem>) => {
@@ -252,9 +235,9 @@ export function useLandingLayout(
   const reset = useCallback(async () => {
     localStorage.removeItem(storageKey);
     const seed = await fetchSeed();
-    setLayout(hydrate(seed, textDefaults));
+    setLayout(seed);
     setDirty(false);
-  }, [storageKey, textDefaults]);
+  }, [storageKey]);
 
   const exportJson = useCallback(() => {
     if (!layout) return;
@@ -281,6 +264,5 @@ export function useLandingLayout(
     reset,
     exportJson,
     setColumnWidth,
-    updateText,
   };
 }
