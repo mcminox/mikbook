@@ -2,7 +2,8 @@
 
 import type { CSSProperties } from "react";
 import { useState } from "react";
-import type { ColumnId, ImageItem, LandingLayout } from "@/lib/landing/layout-types";
+import type { ColumnId, ImageItem, LandingLayout, LandingText } from "@/lib/landing/layout-types";
+import { DEFAULT_LANDING_TEXT } from "@/lib/landing/layout-types";
 import { useSmoothWheelScroll } from "@/lib/landing/useSmoothWheelScroll";
 import { MagnetColumn } from "./MagnetColumn";
 import { usePreviewPreferences } from "./PreviewPreferences";
@@ -12,11 +13,13 @@ type Props = {
   layout: LandingLayout;
   editorZoom: number;
   revision?: boolean;
+  original?: boolean;
   editMode: boolean;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
   onChange: (id: string, patch: Partial<ImageItem>) => void;
   onColumnWidth: (column: ColumnId, widthPx: number) => void;
+  onTextChange: (patch: Partial<LandingText>) => void;
 };
 
 const CHAPTERS = [
@@ -29,30 +32,116 @@ type Language = "FR" | "EN";
 
 function Col1Text({
   revision,
+  original,
   language,
   onLanguageChange,
+  editMode,
+  text,
+  onTextChange,
 }: {
   revision: boolean;
+  original: boolean;
   language: Language;
   onLanguageChange: (language: Language) => void;
+  editMode: boolean;
+  text: LandingText;
+  onTextChange: (patch: Partial<LandingText>) => void;
 }) {
   const isFrench = revision ? language === "FR" : true;
   const isFrenchCta = revision && isFrench;
+
+  if (original) {
+    return (
+      <div className="landing-col1-inner">
+        <h1
+          className="landing-brand"
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ brand: event.currentTarget.textContent ?? "" })}
+        >
+          {text.brand}
+        </h1>
+        <p
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ intro: event.currentTarget.textContent ?? "" })}
+        >
+          {text.intro}
+        </p>
+        <p
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ description: event.currentTarget.textContent ?? "" })}
+        >
+          {text.description}
+        </p>
+        <p className="landing-cta">
+          <strong
+            contentEditable={editMode}
+            suppressContentEditableWarning
+            onBlur={(event) => onTextChange({ cta: event.currentTarget.textContent ?? "" })}
+          >
+            {text.cta || "Read the Mikbook"}
+          </strong>
+          <br />
+          <span
+            contentEditable={editMode}
+            suppressContentEditableWarning
+            onBlur={(event) => onTextChange({ ctaNote: event.currentTarget.textContent ?? "" })}
+          >
+            {text.ctaNote || "or just play with it."}
+          </span>
+        </p>
+        <address
+          className="landing-meta not-italic"
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ contact: event.currentTarget.innerText ?? "" })}
+        >
+          {(text.contact || "@mikbook\nEditions Eyrolles\n1 rue Thénard\n75005 Paris")
+            .split("\n")
+            .map((line, index) => (
+              <span key={line + index}>
+                {index > 0 && <br />}
+                {line}
+              </span>
+            ))}
+          <br />
+          <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
+            Follow us on instagram
+          </a>
+        </address>
+      </div>
+    );
+  }
 
   return (
     <div
       className={`landing-col1-inner${revision ? " landing-col1-inner--revision" : ""}`}
     >
-      {!revision && <h1 className="landing-brand">MIKBOOK</h1>}
-      <p>
-        {isFrench
-          ? "Devenir un interne sous-alimenté puis un médecin assigné en justice n'est pas facile ; il faut d'abord une dure préparation."
-          : "Becoming an underfed medical intern and then a doctor facing a lawsuit is not easy; first comes some serious preparation."}
+      {!revision && (
+        <h1
+          className="landing-brand"
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ brand: event.currentTarget.textContent ?? "" })}
+        >
+          {text.brand}
+        </h1>
+      )}
+      <p
+        contentEditable={editMode}
+        suppressContentEditableWarning
+        onBlur={(event) => onTextChange({ intro: event.currentTarget.textContent ?? "" })}
+      >
+        {isFrench ? text.intro : "Becoming an underfed medical intern and then a doctor facing a lawsuit is not easy; first comes some serious preparation."}
       </p>
-      <p>
-        {isFrench
-          ? "Synthèse méthodique du programme des EDN, le MIKBOOK propose aux étudiants un outil de mémorisation visuelle et logique des points essentiels, s'appuyant sur un graphisme particulier et un code de couleurs identique pour chaque item de chaque chapitre, visant à un projet pédagogique global."
-          : "A methodical guide to the EDN syllabus, MIKBOOK offers students a visual and logical way to remember essential concepts, using a distinctive graphic language and a consistent colour code throughout every chapter."}
+      <p
+        contentEditable={editMode}
+        suppressContentEditableWarning
+        onBlur={(event) => onTextChange({ description: event.currentTarget.textContent ?? "" })}
+      >
+        {isFrench ? text.description : "A methodical guide to the EDN syllabus, MIKBOOK offers students a visual and logical way to remember essential concepts, using a distinctive graphic language and a consistent colour code throughout every chapter."}
       </p>
       {revision && (
         <nav
@@ -68,18 +157,34 @@ function Col1Text({
         </nav>
       )}
       <p className="landing-cta">
-        <strong>{isFrenchCta ? "Lire le Mikbook" : "Read the Mikbook"}</strong>
+        <strong
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ cta: event.currentTarget.textContent ?? "" })}
+        >
+          {isFrenchCta ? text.cta : "Read the Mikbook"}
+        </strong>
         <br />
-        {isFrenchCta ? "ou simplement jouer avec." : "or just play with it."}
+        <span
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ ctaNote: event.currentTarget.textContent ?? "" })}
+        >
+          {isFrenchCta ? text.ctaNote : "or just play with it."}
+        </span>
       </p>
-      <address className="landing-meta not-italic">
-        @mikbook
-        <br />
-        Editions Eyrolles
-        <br />
-        1 rue Thénard
-        <br />
-        75005 Paris
+      <address
+        className="landing-meta not-italic"
+        contentEditable={editMode}
+        suppressContentEditableWarning
+        onBlur={(event) => onTextChange({ contact: event.currentTarget.innerText ?? "" })}
+      >
+        {text.contact.split("\n").map((line, index) => (
+          <span key={line + index}>
+            {index > 0 && <br />}
+            {line}
+          </span>
+        ))}
         <br />
         <a href="https://www.instagram.com/" target="_blank" rel="noopener noreferrer">
           {isFrenchCta ? "Suivez-nous sur Instagram" : "Follow us on Instagram"}
@@ -103,13 +208,56 @@ function Col1Text({
   );
 }
 
-function Col2Intro({ language }: { language: Language }) {
+function Col2Intro({
+  language,
+  editMode,
+  text,
+  onTextChange,
+  original,
+}: {
+  language: Language;
+  editMode: boolean;
+  text: LandingText;
+  onTextChange: (patch: Partial<LandingText>) => void;
+  original: boolean;
+}) {
+  if (original) {
+    return (
+      <div className="landing-col2-intro relative z-[5] px-2 pb-4 pt-1">
+        <p
+          className="text-[11px] leading-snug text-black/70"
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({
+            secretTitle: event.currentTarget.innerText?.split("\n")[0] ?? "",
+            pavilionTitle: event.currentTarget.innerText?.split("\n")[1] ?? "",
+          })}
+        >
+          The Secret Cave
+          <br />
+          Water Pavillion
+        </p>
+      </div>
+    );
+  }
   return (
     <div className="landing-col2-intro relative z-[5] px-2 pb-4 pt-1">
       <p className="text-[11px] leading-snug text-black/70">
-        {language === "FR" ? "La grotte secrète" : "The Secret Cave"}
+        <span
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ secretTitle: event.currentTarget.textContent ?? "" })}
+        >
+          {language === "FR" ? text.secretTitle : "The Secret Cave"}
+        </span>
         <br />
-        {language === "FR" ? "Pavillon aquatique" : "Water Pavilion"}
+        <span
+          contentEditable={editMode}
+          suppressContentEditableWarning
+          onBlur={(event) => onTextChange({ pavilionTitle: event.currentTarget.textContent ?? "" })}
+        >
+          {language === "FR" ? text.pavilionTitle : "Water Pavilion"}
+        </span>
       </p>
     </div>
   );
@@ -119,11 +267,13 @@ export function ColumnLayout({
   layout,
   editorZoom,
   revision = false,
+  original = false,
   editMode,
   selectedId,
   onSelect,
   onChange,
   onColumnWidth,
+  onTextChange,
 }: Props) {
   const { col1, col2: w2, col3: w3 } = layout.columnWidths;
   const editorExtentScale = Math.max(1, editorZoom);
@@ -135,8 +285,12 @@ export function ColumnLayout({
   const col1Text = (
     <Col1Text
       revision={revision}
+      original={original}
       language={revision ? language : "FR"}
       onLanguageChange={setLanguage}
+      editMode={editMode}
+      text={layout.text ?? DEFAULT_LANDING_TEXT}
+      onTextChange={onTextChange}
     />
   );
   const scrollToChapterIndex = () => {
@@ -152,7 +306,7 @@ export function ColumnLayout({
 
   return (
     <div
-      className={`min-h-dvh bg-[var(--landing-bg)] text-[var(--landing-fg)]${revision ? " landing-revision" : ""}`}
+      className={`min-h-dvh bg-[var(--landing-bg)] text-[var(--landing-fg)]${revision ? " landing-revision" : ""}${original ? " landing-original" : ""}`}
       onClick={() => {
         if (editMode) onSelect(null);
       }}
@@ -211,7 +365,15 @@ export function ColumnLayout({
           onChange={onChange}
           onColumnWidth={onColumnWidth}
           smoothScroll={smoothScroll}
-          header={<Col2Intro language={revision ? language : "EN"} />}
+          header={
+            <Col2Intro
+              language={revision ? language : "EN"}
+              editMode={editMode}
+              text={layout.text ?? DEFAULT_LANDING_TEXT}
+              onTextChange={onTextChange}
+              original={original}
+            />
+          }
           className={`min-w-0 overflow-x-hidden overflow-y-auto border-l border-black/10 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden${editMode ? " landing-editor-column" : ""}`}
         />
 
@@ -231,7 +393,7 @@ export function ColumnLayout({
         </div>
       </div>
 
-      <div className="block min-[760px]:hidden">
+      <div className={original ? "block min-[900px]:hidden" : "block min-[760px]:hidden"}>
         <section
           className={`border-b border-black/10 p-5${revision ? " landing-revision__mobile-column-one" : ""}`}
         >
@@ -247,7 +409,15 @@ export function ColumnLayout({
           onChange={onChange}
           onColumnWidth={onColumnWidth}
           smoothScroll={smoothScroll}
-          header={<Col2Intro language={revision ? language : "EN"} />}
+          header={
+            <Col2Intro
+              language={revision ? language : "EN"}
+              editMode={editMode}
+              text={layout.text ?? DEFAULT_LANDING_TEXT}
+              onTextChange={onTextChange}
+              original={original}
+            />
+          }
           className="relative border-b border-black/10"
         />
         <MagnetColumn

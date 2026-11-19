@@ -191,6 +191,18 @@ export function ImageEditorPanel({
             />
           </label>
 
+          <button
+            type="button"
+            className="w-full rounded border border-black/20 px-2 py-1.5"
+            onClick={() =>
+              window.dispatchEvent(
+                new CustomEvent("mikbook:start-crop", { detail: { id: selected.id } }),
+              )
+            }
+          >
+            Crop image (Ctrl / Cmd + drag)
+          </button>
+
           <label className="block space-y-1">
             <span>Link (href)</span>
             <input

@@ -3,13 +3,20 @@
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useLandingLayout } from "@/lib/landing/useLandingLayout";
+import { ORIGINAL_LANDING_TEXT } from "@/lib/landing/layout-types";
 import { ColumnLayout } from "./ColumnLayout";
 import { ImageEditorPanel } from "./ImageEditorPanel";
 import { SubscribeWidget } from "./SubscribeWidget";
 
 const PREVIEW_STORAGE_KEY = "mikbook-landing-layout-preview-v1";
 
-export function LandingShell({ revision = false }: { revision?: boolean }) {
+export function LandingShell({
+  revision = false,
+  original = false,
+}: {
+  revision?: boolean;
+  original?: boolean;
+}) {
   const searchParams = useSearchParams();
   const editMode = searchParams.get("edit") === "1";
   const {
@@ -24,8 +31,14 @@ export function LandingShell({ revision = false }: { revision?: boolean }) {
     reset,
     exportJson,
     setColumnWidth,
+    updateText,
   } = useLandingLayout(
-    revision ? PREVIEW_STORAGE_KEY : undefined,
+    revision
+      ? PREVIEW_STORAGE_KEY
+      : original
+        ? "mikbook-landing-layout-original-v1"
+        : undefined,
+    original ? ORIGINAL_LANDING_TEXT : undefined,
   );
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editorZoom, setEditorZoom] = useState(0.9);
@@ -44,11 +57,13 @@ export function LandingShell({ revision = false }: { revision?: boolean }) {
         layout={layout}
         editorZoom={editorZoom}
         revision={revision}
+        original={original}
         editMode={editMode}
         selectedId={selectedId}
         onSelect={setSelectedId}
         onChange={updateImage}
         onColumnWidth={setColumnWidth}
+        onTextChange={updateText}
       />
       {editMode && (
         <ImageEditorPanel
